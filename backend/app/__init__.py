@@ -10,7 +10,7 @@ def create_app(config_name='development'):
     # 啟用 CORS
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:*", "http://127.0.0.1:*"],
+            "origins": ["http://localhost:*", "http://127.0.0.1:*",  "https://spiffy-kataifi-bc6cd2.netlify.app" ],
             "methods": ["GET", "POST", "OPTIONS"],
             "allow_headers": ["Content-Type"]
         }
