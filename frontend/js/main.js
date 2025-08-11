@@ -1,4 +1,7 @@
-// 偏見檢測模式
+// API 設定
+const API_BASE_URL = 'http://localhost:5000/api';
+
+// 偏見檢測模式（保留前端版本作為備用）
 const biasPatterns = [
     {
         id: 'occupation_label',
@@ -57,6 +60,35 @@ const biasPatterns = [
 let analysisResults = {};
 let userFeedback = [];
 
+// API 相關函數
+async function callAPI(endpoint, method = 'GET', data = null) {
+    try {
+        const options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        };
+
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || '請求失敗');
+        }
+
+        return result;
+    } catch (error) {
+        console.error('API 錯誤:', error);
+        throw error;
+    }
+}
+
+// 切換標籤
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
@@ -74,6 +106,7 @@ function switchTab(tabName) {
     }
 }
 
+// 從 URL 抓取並分析
 async function fetchAndAnalyze() {
     const url = document.getElementById('newsUrl').value.trim();
     if (!url) {
@@ -85,38 +118,28 @@ async function fetchAndAnalyze() {
     hideError();
 
     try {
-        const mockData = getMockDataFromUrl(url);
+        // 呼叫後端 API 抓取新聞
+        const fetchResult = await callAPI('/fetch-news', 'POST', { url });
         
-        if (mockData) {
-            processNews(mockData);
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
-        } else {
-            throw new Error('無法從此網址抓取內容，請使用「貼上文字」功能');
+        if (fetchResult.success && fetchResult.data) {
+            const { title, content } = fetchResult.data;
+            
+            // 分析偏見
+            const analysisResult = await callAPI('/analyze', 'POST', { title, content });
+            
+            if (analysisResult.success) {
+                displayAnalysisResults(analysisResult.data);
+            }
         }
     } catch (error) {
-        showError(error.message);
+        showError(error.message || '無法從此網址抓取內容，請使用「貼上文字」功能');
+    } finally {
         document.getElementById('loading').style.display = 'none';
     }
 }
 
-function getMockDataFromUrl(url) {
-    const mockDatabase = {
-        'example.com': `【標題】女公關遭前男友砍殺身亡 生前曾多次分合
-【內容】一名在酒店工作的女子昨日深夜獨自外出時，遭前男友持刀攻擊，送醫不治。據了解，兩人感情糾紛已久，死者生前曾多次與嫌犯分分合合。鄰居表示，死者平時穿著暴露，經常深夜外出，交友複雜。警方初步研判為情殺案件。`,
-        'news.tw': `【標題】酒店妹慘遭恐怖情人殺害 疑因感情糾紛
-【內容】一名酒店小姐今日凌晨在住處遭到前男友持刀攻擊身亡。據悉，兩人因感情問題早有嫌隙，死者友人透露她生前曾提到害怕前男友，但仍多次單獨與對方見面。`
-    };
-
-    for (let domain in mockDatabase) {
-        if (url.includes(domain)) {
-            return mockDatabase[domain];
-        }
-    }
-    return null;
-}
-
-function analyzeNews() {
+// 分析文字內容
+async function analyzeNews() {
     const input = document.getElementById('newsInput').value.trim();
     if (!input) {
         showError('請輸入新聞內容');
@@ -126,13 +149,66 @@ function analyzeNews() {
     showLoading();
     hideError();
 
-    setTimeout(() => {
-        processNews(input);
+    try {
+        // 解析標題和內容
+        const titleMatch = input.match(/【標題】(.+?)(?=【內容】|$)/s);
+        const contentMatch = input.match(/【內容】(.+)/s);
+        
+        const title = titleMatch ? titleMatch[1].trim() : input.split('\n')[0];
+        const content = contentMatch ? contentMatch[1].trim() : input;
+
+        // 呼叫後端 API 分析
+        const analysisResult = await callAPI('/analyze', 'POST', { title, content });
+        
+        if (analysisResult.success) {
+            displayAnalysisResults(analysisResult.data);
+        }
+    } catch (error) {
+        // 如果 API 失敗，使用前端分析
+        console.warn('API 分析失敗，使用前端分析:', error);
+        processNewsLocally(input);
+    } finally {
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('resultSection').style.display = 'block';
-    }, 1000);
+    }
 }
 
+// 顯示分析結果
+function displayAnalysisResults(data) {
+    analysisResults = data;
+    
+    // 顯示原始版本
+    document.getElementById('originalTitle').innerHTML = data.original.marked_title || data.original.title;
+    document.getElementById('originalContent').innerHTML = data.original.marked_content || data.original.content;
+    
+    // 顯示修正版本
+    document.getElementById('revisedTitle').textContent = data.revised.title;
+    document.getElementById('revisedContent').textContent = data.revised.content;
+    
+    // 顯示偏見分析
+    displayBiasAnalysis(data.biases);
+    
+    // 顯示結果區域
+    document.getElementById('resultSection').style.display = 'block';
+    
+    // 啟用文字選取功能
+    setTimeout(() => {
+        setupTextSelection();
+    }, 100);
+}
+
+// 本地處理（備用方案）
+function processNewsLocally(input) {
+    const titleMatch = input.match(/【標題】(.+?)(?=【內容】|$)/s);
+    const contentMatch = input.match(/【內容】(.+)/s);
+    
+    let title = titleMatch ? titleMatch[1].trim() : input.split('\n')[0];
+    let content = contentMatch ? contentMatch[1].trim() : input;
+
+    // 使用前端邏輯處理
+    processNews(input);
+}
+
+// 處理新聞（前端版本）
 function processNews(input) {
     const titleMatch = input.match(/【標題】(.+?)(?=【內容】|$)/s);
     const contentMatch = input.match(/【內容】(.+)/s);
@@ -201,6 +277,9 @@ function processNews(input) {
     // 顯示偏見分析（含評分系統）
     displayBiasAnalysis(foundBiases);
     
+    // 顯示結果區域
+    document.getElementById('resultSection').style.display = 'block';
+    
     // 啟用文字選取功能
     setTimeout(() => {
         setupTextSelection();
@@ -211,7 +290,7 @@ function displayBiasAnalysis(biases) {
     const biasList = document.getElementById('biasList');
     biasList.innerHTML = '';
 
-    if (biases.length === 0) {
+    if (!biases || biases.length === 0) {
         const li = document.createElement('li');
         li.className = 'bias-item';
         li.innerHTML = '<p style="text-align: center; color: #999;">未發現明顯的性別偏見或受害者譴責內容</p>';
@@ -223,7 +302,7 @@ function displayBiasAnalysis(biases) {
         const li = document.createElement('li');
         li.className = 'bias-item';
         
-        const biasText = bias.pattern.source.replace(/\\/g, '').replace(/\|/g, '、');
+        const biasText = bias.pattern.source || bias.pattern.replace(/\\/g, '').replace(/\|/g, '、');
         
         li.innerHTML = `
             <div class="bias-item-header">
@@ -252,7 +331,7 @@ function displayBiasAnalysis(biases) {
     });
 }
 
-function rateBias(biasId, rating, button) {
+async function rateBias(biasId, rating, button) {
     // 更新評分狀態
     const buttons = button.parentElement.querySelectorAll('.rating-btn');
     buttons.forEach(btn => btn.classList.remove('selected'));
@@ -262,10 +341,22 @@ function rateBias(biasId, rating, button) {
     const bias = analysisResults.biases.find(b => b.id === biasId);
     if (bias) {
         bias.rating = rating;
-        logFeedback(`評分「${bias.pattern.source}」為${getRatingText(rating)}`);
+        logFeedback(`評分「${bias.pattern.source || bias.pattern}」為${getRatingText(rating)}`);
+        
+        // 嘗試提交到後端
+        try {
+            await callAPI('/feedback', 'POST', {
+                type: 'bias_rating',
+                biasId: biasId,
+                rating: rating,
+                pattern: bias.pattern.source || bias.pattern,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('提交評分失敗:', error);
+        }
     }
 
-    // 這裡可以將評分資料傳送到後端
     console.log('Bias rated:', biasId, rating);
 }
 
@@ -281,8 +372,14 @@ function getRatingText(rating) {
 function setupTextSelection() {
     console.log('Setting up text selection...');
     
-    // 監聽document的mouseup事件
-    document.addEventListener('mouseup', function(e) {
+    // 移除舊的事件監聽器
+    const oldHandler = document.textSelectionHandler;
+    if (oldHandler) {
+        document.removeEventListener('mouseup', oldHandler);
+    }
+    
+    // 新的事件處理器
+    const handleMouseUp = function(e) {
         // 確保點擊在結果區域內
         if (!e.target.closest('.result-box')) {
             hideSelectionTooltip();
@@ -329,10 +426,16 @@ function setupTextSelection() {
                 }
             }
         }, 50);
-    });
+    };
+    
+    // 儲存事件處理器參考
+    document.textSelectionHandler = handleMouseUp;
+    
+    // 添加事件監聽器
+    document.addEventListener('mouseup', handleMouseUp);
 }
 
-function markUserSelection(text, container) {
+async function markUserSelection(text, container) {
     // 判斷是原始版本還是修正版本
     const isOriginal = container.closest('.original') !== null;
     const context = isOriginal ? '原始版本' : '修正版本';
@@ -367,6 +470,13 @@ function markUserSelection(text, container) {
     }
     
     logFeedback(`標記了${context}中的文字：「${text}」`);
+    
+    // 嘗試提交到後端
+    try {
+        await callAPI('/feedback', 'POST', feedback);
+    } catch (error) {
+        console.error('提交標記失敗:', error);
+    }
 }
 
 function logFeedback(message) {
@@ -447,6 +557,18 @@ function exportAnalysisData() {
     return data;
 }
 
+// 檢查 API 健康狀態
+async function checkAPIHealth() {
+    try {
+        const result = await callAPI('/health');
+        console.log('API is healthy:', result);
+        return true;
+    } catch (error) {
+        console.warn('API is not available, using local processing');
+        return false;
+    }
+}
+
 // 鍵盤快捷鍵
 document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + E: 匯出資料
@@ -461,6 +583,9 @@ document.addEventListener('keydown', (e) => {
 // 頁面載入完成後的初始化
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded');
+    
+    // 檢查 API 狀態
+    checkAPIHealth();
     
     // 點擊其他地方時隱藏選取提示
     document.addEventListener('click', (e) => {
