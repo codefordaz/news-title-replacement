@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新聞偏見移除工具 - 打破性別歧視報導</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>新聞偏見移除工具</h1>
+            <p>揭露並修正新聞報導中的性別歧視與受害者譴責</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">輸入新聞來源</h2>
+                
+                <div class="input-tabs">
+                    <button class="tab active" onclick="switchTab('url')">貼上連結</button>
+                    <button class="tab" onclick="switchTab('text')">貼上文字</button>
+                </div>
+
+                <div id="urlTab" class="tab-content active">
+                    <div class="url-input-group">
+                        <input type="url" id="newsUrl" placeholder="請貼上新聞網址，例如: https://news.example.com/article">
+                        <button class="analyze-btn" onclick="fetchAndAnalyze()">
+                            <span>🔗</span>
+                            <span>抓取並分析</span>
+                        </button>
+                    </div>
+                    <div class="cors-notice">
+                        <strong>注意：</strong>由於瀏覽器安全限制，部分新聞網站可能無法直接抓取。如遇到此情況，請改用「貼上文字」功能。
+                    </div>
+                </div>
+
+                <div id="textTab" class="tab-content">
+                    <textarea id="newsInput" placeholder="請貼上包含標題的完整新聞內容...
+
+範例格式：
+【標題】女公關遭前男友砍殺身亡 生前曾多次分合
+【內容】一名在酒店工作的女子昨日遭前男友持刀攻擊..."></textarea>
+                    
+                    <div class="button-group">
+                        <button class="analyze-btn" onclick="analyzeNews()">
+                            <span>🔍</span>
+                            <span>分析並重寫</span>
+                        </button>
+                        <button class="example-btn" onclick="loadExample()">
+                            <span>📋</span>
+                            <span>載入範例</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+
+            <div class="loading" id="loading"></div>
+
+            <div class="result-section" id="resultSection">
+                <h2 class="section-title">分析結果</h2>
+                
+                <div class="comparison-grid">
+                    <div class="result-box original">
+                        <div class="result-title">
+                            <span>❌</span>
+                            <span>原始報導（含偏見）</span>
+                        </div>
+                        <div class="news-title" id="originalTitle"></div>
+                        <div class="news-content" id="originalContent"></div>
+                    </div>
+
+                    <div class="result-box revised">
+                        <div class="result-title">
+                            <span>✅</span>
+                            <span>修正後報導</span>
+                        </div>
+                        <div class="news-title" id="revisedTitle"></div>
+                        <div class="news-content" id="revisedContent"></div>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3 class="analysis-title">偏見分析</h3>
+                    <div class="analysis-content">
+                        <p>此新聞報導中發現以下問題，請協助評分以改進分析準確度：</p>
+                        <ul class="bias-list" id="biasList"></ul>
+                    </div>
+                </div>
+
+                <div class="feedback-section">
+                    <h3 class="feedback-title">開發回饋紀錄</h3>
+                    <p style="color: #666; margin-bottom: 10px;">選取任何文字來標記遺漏或誤判的內容</p>
+                    <div class="feedback-log" id="feedbackLog">
+                        <p style="color: #999; text-align: center;">尚無回饋紀錄</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="selection-tooltip" id="selectionTooltip">📌 標記此處</div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
