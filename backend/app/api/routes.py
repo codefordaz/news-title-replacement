@@ -3,6 +3,8 @@ from app.api import api_bp
 from app.services.news_scraper import NewsScraper
 from app.services.bias_analyzer import BiasAnalyzer
 from app.utils.validators import validate_url
+from app.database import db
+from app.models import NewsAnalysis, Feedback
 
 @api_bp.route('/health', methods=['GET'])
 def health_check():
@@ -64,6 +66,18 @@ def analyze_bias():
         # 分析偏見
         analyzer = BiasAnalyzer()
         analysis_result = analyzer.analyze(title, content)
+
+        # 儲存分析記錄到資料庫
+        analysis = NewsAnalysis(
+            title=title,
+            content=content,
+            bias_count=len(analysis_result.get('biases', []))
+        )
+        db.session.add(analysis)
+        db.session.commit()
+
+        # 在回傳的資料中加入 analysis_id
+        analysis_result['analysis_id'] = analysis.id
         
         return jsonify({
             'success': True,
@@ -81,8 +95,15 @@ def submit_feedback():
     try:
         data = request.get_json()
         
-        # TODO: 儲存回饋到資料庫
-        # 目前先回傳成功訊息
+        # 儲存回饋到資料庫
+        feedback = Feedback(
+            analysis_id=data.get('analysis_id'),
+            feedback_type=data.get('type'),
+            content=data.get('text', ''),
+            rating=data.get('rating')
+        )
+        db.session.add(feedback)
+        db.session.commit()
         
         return jsonify({
             'success': True,
