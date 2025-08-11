@@ -1,5 +1,7 @@
 // API 設定
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api'
+  : 'https://news-title-replacement-api.onrender.com/api';
 
 // 偏見檢測模式（保留前端版本作為備用）
 const biasPatterns = [
