@@ -36,11 +36,19 @@
                 </div>
 
                 <div id="textTab" class="tab-content">
-                    <textarea id="newsInput" placeholder="請貼上包含標題的完整新聞內容...
-
-範例格式：
-【標題】女公關遭前男友砍殺身亡 生前曾多次分合
-【內容】一名在酒店工作的女子昨日遭前男友持刀攻擊..."></textarea>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">
+                            新聞標題 <span style="color: red;">*</span>
+                        </label>
+                        <input type="text" id="newsTitle" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px;" placeholder="請輸入新聞標題" value="" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">
+                            新聞內容 <span style="color: red;">*</span>
+                        </label>
+                        <textarea id="newsContent" placeholder="請貼上新聞內容" value="" required></textarea>
+                    </div>
                     
                     <div class="button-group">
                         <button class="analyze-btn" onclick="analyzeNews()">

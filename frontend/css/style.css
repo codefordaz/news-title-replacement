@@ -504,7 +504,7 @@ button {
 }
 
 .selection-tooltip {
-    position: fixed;
+    position: absolute;
     background: #333;
     color: white;
     padding: 8px 12px;
@@ -513,4 +513,33 @@ button {
     z-index: 1000;
     display: none;
     cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+#newsContent {
+    min-height: 150px;
 }

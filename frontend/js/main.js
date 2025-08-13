@@ -142,23 +142,17 @@ async function fetchAndAnalyze() {
 
 // 分析文字內容
 async function analyzeNews() {
-    const input = document.getElementById('newsInput').value.trim();
-    if (!input) {
-        showError('請輸入新聞內容');
-        return;
+    const title = document.getElementById('newsTitle').value.trim();
+    const content = document.getElementById('newsContent').value.trim();
+    
+    if(!title || !content) {
+        showError('請填寫標題內容')
     }
 
     showLoading();
     hideError();
 
     try {
-        // 解析標題和內容
-        const titleMatch = input.match(/【標題】(.+?)(?=【內容】|$)/s);
-        const contentMatch = input.match(/【內容】(.+)/s);
-        
-        const title = titleMatch ? titleMatch[1].trim() : input.split('\n')[0];
-        const content = contentMatch ? contentMatch[1].trim() : input;
-
         // 呼叫後端 API 分析
         const analysisResult = await callAPI('/analyze', 'POST', { title, content });
         
@@ -168,7 +162,7 @@ async function analyzeNews() {
     } catch (error) {
         // 如果 API 失敗，使用前端分析
         console.warn('API 分析失敗，使用前端分析:', error);
-        processNewsLocally(input);
+        processNewsLocally(title, content);
     } finally {
         document.getElementById('loading').style.display = 'none';
     }
@@ -199,13 +193,8 @@ function displayAnalysisResults(data) {
 }
 
 // 本地處理（備用方案）
-function processNewsLocally(input) {
-    const titleMatch = input.match(/【標題】(.+?)(?=【內容】|$)/s);
-    const contentMatch = input.match(/【內容】(.+)/s);
-    
-    let title = titleMatch ? titleMatch[1].trim() : input.split('\n')[0];
-    let content = contentMatch ? contentMatch[1].trim() : input;
-
+function processNewsLocally(title, content) {
+    const input = `【標題】${title}\n【內容】${content}`;
     // 使用前端邏輯處理
     processNews(input);
 }
@@ -374,67 +363,67 @@ function getRatingText(rating) {
 function setupTextSelection() {
     console.log('Setting up text selection...');
     
-    // 移除舊的事件監聽器
-    const oldHandler = document.textSelectionHandler;
-    if (oldHandler) {
-        document.removeEventListener('mouseup', oldHandler);
-    }
+    // 使用事件委派，監聽整個結果區域
+    const resultSection = document.getElementById('resultSection');
     
-    // 新的事件處理器
-    const handleMouseUp = function(e) {
-        // 確保點擊在結果區域內
-        if (!e.target.closest('.result-box')) {
-            hideSelectionTooltip();
-            return;
-        }
-        
-        // 延遲檢查選取的文字
-        setTimeout(() => {
-            const selection = window.getSelection();
-            const selectedText = selection.toString().trim();
-            
-            console.log('Mouse up - Selected text:', selectedText);
-            
-            // 確保選取的文字長度大於2
-            if (selectedText && selectedText.length > 2) {
-                try {
-                    const range = selection.getRangeAt(0);
-                    const rect = range.getBoundingClientRect();
+    if (resultSection) {
+        resultSection.addEventListener('mouseup', function(e) {
+            // 確保點擊在結果框內
+            if (e.target.closest('.result-box')) {
+                // 延遲檢查選取
+                setTimeout(() => {
+                    const selection = window.getSelection();
+                    const selectedText = selection.toString().trim();
                     
-                    if (rect.width > 0 && rect.height > 0) {
-                        const tooltip = document.getElementById('selectionTooltip');
-                        
-                        // 計算提示框位置
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                        
-                        tooltip.style.display = 'block';
-                        tooltip.style.left = (rect.left + scrollLeft + rect.width / 2 - 40) + 'px';
-                        tooltip.style.top = (rect.top + scrollTop - 35) + 'px';
-                        
-                        console.log('Tooltip shown at:', tooltip.style.left, tooltip.style.top);
-                        
-                        // 綁定點擊事件
-                        tooltip.onclick = function(event) {
-                            event.stopPropagation();
-                            console.log('Tooltip clicked');
-                            markUserSelection(selectedText, e.target);
-                            selection.removeAllRanges();
-                            hideSelectionTooltip();
-                        };
+                    console.log('Selected:', selectedText); // 除錯用
+                    
+                    if (selectedText && selectedText.length > 1) {
+                        showTooltip(e, selectedText);
+                    } else {
+                        hideSelectionTooltip();
                     }
-                } catch (err) {
-                    console.error('Error showing tooltip:', err);
-                }
+                }, 50);
             }
-        }, 50);
-    };
+        });
+        
+        // 點擊其他地方時隱藏提示
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#selectionTooltip') && !window.getSelection().toString()) {
+                hideSelectionTooltip();
+            }
+        });
+    }
+}
+
+function showTooltip(event, selectedText) {
+   const tooltip = document.getElementById('selectionTooltip');
+    const selection = window.getSelection();
     
-    // 儲存事件處理器參考
-    document.textSelectionHandler = handleMouseUp;
-    
-    // 添加事件監聽器
-    document.addEventListener('mouseup', handleMouseUp);
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // 計算位置（相對於視窗）
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // 設定提示框位置在選取文字上方中間
+        tooltip.style.display = 'block';
+        tooltip.style.left = (rect.left + scrollX + rect.width / 2 - 40) + 'px';
+        tooltip.style.top = (rect.top + scrollY - 35) + 'px';
+        
+        // 移除舊的事件監聽器
+        const newTooltip = tooltip.cloneNode(true);
+        tooltip.parentNode.replaceChild(newTooltip, tooltip);
+        
+        // 綁定新的點擊事件
+        newTooltip.onclick = function(e) {
+            e.stopPropagation();
+            markUserSelection(selectedText, event.target);
+            window.getSelection().removeAllRanges();
+            hideSelectionTooltip();
+        };
+    }
 }
 
 async function markUserSelection(text, container) {
@@ -541,10 +530,31 @@ function hideSelectionTooltip() {
 }
 
 function loadExample() {
-    const exampleNews = `【標題】女公關遭前男友砍殺身亡 生前曾多次分合
-【內容】一名在酒店工作的女子昨日深夜獨自外出時，遭前男友持刀攻擊，送醫不治。據了解，兩人感情糾紛已久，死者生前曾多次與嫌犯分分合合。鄰居表示，死者平時穿著暴露，經常深夜外出，交友複雜。警方初步研判為情殺案件。`;
+   // 檢查當前是哪個標籤
+    const urlTab = document.getElementById('urlTab');
+    const textTab = document.getElementById('textTab');
     
-    document.getElementById('newsInput').value = exampleNews;
+    // 如果在 URL 標籤，切換到文字標籤
+    if (urlTab && urlTab.classList.contains('active')) {
+        switchTab('text');
+    }
+    
+    // 使用舊格式填入範例
+    const oldInput = document.getElementById('newsInput');
+    if (oldInput) {
+        oldInput.value = `【標題】女公關遭前男友砍殺身亡 生前曾多次分合
+【內容】一名在酒店工作的女子昨日深夜獨自外出時，遭前男友持刀攻擊，送醫不治。據了解，兩人感情糾紛已久，死者生前曾多次與嫌犯分分合合。鄰居表示，死者平時穿著暴露，經常深夜外出，交友複雜。警方初步研判為情殺案件。`;
+        return;
+    }
+    
+    // 嘗試新格式
+    const titleEl = document.getElementById('newsTitle');
+    const contentEl = document.getElementById('newsContent');
+    
+    if (titleEl && contentEl) {
+        titleEl.value = '女公關遭前男友砍殺身亡 生前曾多次分合';
+        contentEl.value = '一名在酒店工作的女子昨日深夜獨自外出時，遭前男友持刀攻擊，送醫不治。據了解，兩人感情糾紛已久，死者生前曾多次與嫌犯分分合合。鄰居表示，死者平時穿著暴露，經常深夜外出，交友複雜。警方初步研判為情殺案件。';
+    }
 }
 
 // 匯出分析資料（供開發使用）
