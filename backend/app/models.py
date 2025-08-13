@@ -1,5 +1,7 @@
 from datetime import datetime
 from app.database import db
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class NewsAnalysis(db.Model):
     """新聞分析記錄"""
@@ -30,3 +32,17 @@ class Feedback(db.Model):
     content = db.Column(db.Text)
     rating = db.Column(db.String(20))  # 'extreme', 'neutral', 'correct'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Admin(db.Model, UserMixin):
+    """管理員使用者"""
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)

@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block title %}回饋管理{% endblock %}
+
+{% block content %}
+<h2>使用者回饋管理</h2>
+
+<div class="card">
+    <div style="margin-bottom: 1rem;">
+        <a href="{{ url_for('admin.feedbacks') }}" class="btn" style="margin-right: 0.5rem;">全部</a>
+        <a href="{{ url_for('admin.feedbacks', type='bias_rating') }}" class="btn" style="margin-right: 0.5rem;">偏見評分</a>
+        <a href="{{ url_for('admin.feedbacks', type='user_highlight') }}" class="btn">使用者標記</a>
+    </div>
+
+    {% if feedbacks.items %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>時間</th>
+                <th>類型</th>
+                <th>內容/文字</th>
+                <th>評分</th>
+                <th>相關分析</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in feedbacks.items %}
+            <tr>
+                <td>{{ feedback.id }}</td>
+                <td>{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if feedback.feedback_type == 'bias_rating' %}
+                        <span style="color: #667eea;">偏見評分</span>
+                    {% else %}
+                        <span style="color: #28a745;">使用者標記</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if feedback.content %}
+                        {{ feedback.content[:100] }}{% if feedback.content|length > 100 %}...{% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if feedback.rating %}
+                        {% if feedback.rating == 'correct' %}
+                            <span style="color: green;">✓ 正確</span>
+                        {% elif feedback.rating == 'extreme' %}
+                            <span style="color: red;">✗ 過度</span>
+                        {% elif feedback.rating == 'neutral' %}
+                            <span style="color: orange;">- 中性</span>
+                        {% else %}
+                            {{ feedback.rating }}
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if feedback.analysis %}
+                        <a href="#" onclick="showAnalysis({{ feedback.analysis_id }})">查看</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    <button onclick="reviewFeedback({{ feedback.id }})" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                        審核
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 分頁 -->
+    <div style="margin-top: 2rem; text-align: center;">
+        {% if feedbacks.has_prev %}
+            <a href="{{ url_for('admin.feedbacks', page=feedbacks.prev_num, type=request.args.get('type', '')) }}" class="btn">上一頁</a>
+        {% endif %}
+        
+        <span style="margin: 0 1rem;">
+            第 {{ feedbacks.page }} 頁，共 {{ feedbacks.pages }} 頁
+        </span>
+        
+        {% if feedbacks.has_next %}
+            <a href="{{ url_for('admin.feedbacks', page=feedbacks.next_num, type=request.args.get('type', '')) }}" class="btn">下一頁</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>目前沒有回饋記錄</p>
+    {% endif %}
+</div>
+
+<script>
+function showAnalysis(analysisId) {
+    // 未來可以實作顯示分析詳情的功能
+    alert('分析 ID: ' + analysisId);
+}
+
+function reviewFeedback(feedbackId) {
+    // 未來可以實作審核功能
+    if (confirm('確定要將此回饋標記為已審核？')) {
+        alert('回饋 ID ' + feedbackId + ' 已審核');
+    }
+}
+</script>
+{% endblock %}

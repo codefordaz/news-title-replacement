@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+
+{% block title %}建立管理員{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card">
+        <h2 style="text-align: center; margin-bottom: 2rem;">建立管理員帳號</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>使用者名稱</label>
+                <input type="text" name="username" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" name="password" required class="form-control">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%">建立帳號</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

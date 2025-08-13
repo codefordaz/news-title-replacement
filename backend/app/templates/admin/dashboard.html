@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+
+{% block title %}管理後台{% endblock %}
+
+{% block content %}
+<h2>系統概況</h2>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>{{ total_analyses }}</h3>
+        <p>總分析數</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ total_feedbacks }}</h3>
+        <p>總回饋數</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>最近的回饋</h3>
+    {% if recent_feedbacks %}
+    <table>
+        <thead>
+            <tr>
+                <th>時間</th>
+                <th>類型</th>
+                <th>內容</th>
+                <th>評分</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in recent_feedbacks %}
+            <tr>
+                <td>{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ feedback.feedback_type }}</td>
+                <td>{{ feedback.content[:50] }}{% if feedback.content|length > 50 %}...{% endif %}</td>
+                <td>{{ feedback.rating or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top: 1rem;">
+        <a href="{{ url_for('admin.feedbacks') }}" class="btn">查看所有回饋</a>
+    </p>
+    {% else %}
+    <p>目前沒有回饋記錄</p>
+    {% endif %}
+</div>
+{% endblock %}
