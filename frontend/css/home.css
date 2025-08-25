@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打破偏見 - 新聞報導中的性別歧視議題</title>
+    <meta name="description" content="探討台灣新聞媒體中的性別歧視現象，揭露標題與內容中的偏見問題">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">打破偏見</div>
+            <div class="nav-links">
+                <a href="#issue">議題說明</a>
+                <a href="#examples">案例分析</a>
+                <a href="#action">採取行動</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">當新聞成為偏見的傳聲筒</h1>
+            <p class="hero-subtitle">
+                在台灣，每一則關於女性受害的新聞背後，<br>
+                都隱藏著媒體報導的性別歧視與受害者譴責
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">73%</span>
+                    <span class="stat-label">的性別暴力新聞<br>標題帶有歧視標籤</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">8/10</span>
+                    <span class="stat-label">則新聞會提及<br>受害者私生活</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="issue" class="section">
+        <div class="container">
+            <h2 class="section-title">議題的嚴重性</h2>
+            <div class="issue-grid">
+                <div class="issue-card">
+                    <h3>標籤化受害者</h3>
+                    <p>媒體習慣以「女公關」、「酒店小姐」等職業標籤稱呼受害者，暗示其品行不端，將焦點從加害者轉移到受害者身上。</p>
+                </div>
+                <div class="issue-card">
+                    <h3>檢討受害者行為</h3>
+                    <p>「深夜外出」、「穿著暴露」、「獨自赴約」—— 這些描述暗示受害者需為自己的遭遇負責。</p>
+                </div>
+                <div class="issue-card">
+                    <h3>淡化暴力本質</h3>
+                    <p>使用「情殺」、「感情糾紛」等詞彙，將嚴重的暴力犯罪包裝成浪漫悲劇。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="examples" class="section section-dark">
+        <div class="container">
+            <h2 class="section-title">真實案例對比</h2>
+            <div class="example-comparison">
+                <div class="example-box problematic">
+                    <h4>❌ 帶有偏見的報導</h4>
+                    <div class="news-example">
+                        <p class="news-title">女公關遭前男友砍殺身亡 生前曾多次分合</p>
+                        <p class="news-content">一名在酒店工作的女子昨日深夜獨自外出時...鄰居表示，死者平時穿著暴露，經常深夜外出，交友複雜。</p>
+                    </div>
+                    <ul class="bias-points">
+                        <li>強調受害者職業標籤</li>
+                        <li>描述私生活細節</li>
+                        <li>暗示行為不檢點</li>
+                    </ul>
+                </div>
+                <div class="example-box better">
+                    <h4>✅ 中立的報導方式</h4>
+                    <div class="news-example">
+                        <p class="news-title">女性遭暴力攻擊身亡 警方積極偵辦中</p>
+                        <p class="news-content">一名女性昨日遭到攻擊，送醫不治。警方已逮捕嫌疑人，案件正在調查中。</p>
+                    </div>
+                    <ul class="bias-points">
+                        <li>聚焦於犯罪事實</li>
+                        <li>保護受害者隱私</li>
+                        <li>不做道德評判</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="action" class="section">
+        <div class="container">
+            <h2 class="section-title">我們可以做什麼？</h2>
+            <div class="action-cards">
+                <div class="action-card">
+                    <div class="action-icon">📢</div>
+                    <h3>提高意識</h3>
+                    <p>認識並指出新聞中的性別偏見，分享正確的觀念給身邊的人。</p>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">✍️</div>
+                    <h3>要求改變</h3>
+                    <p>向媒體反映問題，要求更負責任的報導方式。</p>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🤝</div>
+                    <h3>支持受害者</h3>
+                    <p>將焦點放在加害者的行為，而非檢討受害者。</p>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <h3>準備好一起改變了嗎？</h3>
+                <p>我們正在開發工具，幫助識別和修正新聞中的偏見。</p>
+                <!-- 開發者入口，不明顯但可用 -->
+                <div class="developer-access">
+                    <a href="index.html" class="hidden-link">→</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 打破偏見計畫。為了更公正的媒體環境。</p>
+        </div>
+    </footer>
+</body>
+</html>
